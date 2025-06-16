@@ -1,5 +1,6 @@
 from tkinter import *
 import tkinter.ttk as ttk
+from tkinter import messagebox
 import sqlite3
 
 root = Tk()
@@ -14,7 +15,7 @@ GENDER = StringVar()
 AGE = StringVar()
 ADDRESS = StringVar()
 CONTACT = StringVar()
-contact_id = None
+contact_id = None  # Global variable to track selected contact id
 
 # SQLite Database Functions
 def Database():
@@ -54,6 +55,7 @@ def SubmitData():
     Database()
 
 def UpdateData():
+    global contact_id
     if not contact_id:
         return
     conn = sqlite3.connect("contacts.db")
@@ -66,10 +68,13 @@ def UpdateData():
     conn.close()
     ClearFields()
     AddNewWindow.destroy()
+    contact_id = None
     Database()
 
 def DeleteData():
+    global contact_id
     if not tree.selection():
+        messagebox.showwarning("Warning", "Please select a record to delete")
         return
     result = messagebox.askquestion('Confirm', 'Are you sure you want to delete this record?', icon="warning")
     if result == 'yes':
@@ -82,6 +87,7 @@ def DeleteData():
         conn.commit()
         conn.close()
         tree.delete(selected_item)
+        contact_id = None
 
 # GUI Functions
 def ClearFields():
@@ -94,42 +100,33 @@ def ClearFields():
 
 def AddNew():
     global AddNewWindow
+    ClearFields()
     AddNewWindow = Toplevel()
     AddNewWindow.title("Add New Contact")
     AddNewWindow.geometry("400x300")
+    AddNewWindow.resizable(False, False)
 
     ContactForm = Frame(AddNewWindow)
     ContactForm.pack(side=TOP, pady=10)
 
-    lbl_firstname = Label(ContactForm, text="First Name", font=('arial', 12))
-    lbl_firstname.grid(row=0, column=0, padx=5, pady=5, sticky=W)
-    firstname = Entry(ContactForm, textvariable=FIRSTNAME, font=('arial', 12))
-    firstname.grid(row=0, column=1)
+    Label(ContactForm, text="First Name", font=('arial', 12)).grid(row=0, column=0, padx=5, pady=5, sticky=W)
+    Entry(ContactForm, textvariable=FIRSTNAME, font=('arial', 12)).grid(row=0, column=1)
 
-    lbl_lastname = Label(ContactForm, text="Last Name", font=('arial', 12))
-    lbl_lastname.grid(row=1, column=0, padx=5, pady=5, sticky=W)
-    lastname = Entry(ContactForm, textvariable=LASTNAME, font=('arial', 12))
-    lastname.grid(row=1, column=1)
+    Label(ContactForm, text="Last Name", font=('arial', 12)).grid(row=1, column=0, padx=5, pady=5, sticky=W)
+    Entry(ContactForm, textvariable=LASTNAME, font=('arial', 12)).grid(row=1, column=1)
 
-    lbl_gender = Label(ContactForm, text="Gender", font=('arial', 12))
-    lbl_gender.grid(row=2, column=0, padx=5, pady=5, sticky=W)
+    Label(ContactForm, text="Gender", font=('arial', 12)).grid(row=2, column=0, padx=5, pady=5, sticky=W)
     Radiobutton(ContactForm, text="Male", variable=GENDER, value="Male").grid(row=2, column=1, sticky=W)
     Radiobutton(ContactForm, text="Female", variable=GENDER, value="Female").grid(row=2, column=1, sticky=E)
 
-    lbl_age = Label(ContactForm, text="Age", font=('arial', 12))
-    lbl_age.grid(row=3, column=0, padx=5, pady=5, sticky=W)
-    age = Entry(ContactForm, textvariable=AGE, font=('arial', 12))
-    age.grid(row=3, column=1)
+    Label(ContactForm, text="Age", font=('arial', 12)).grid(row=3, column=0, padx=5, pady=5, sticky=W)
+    Entry(ContactForm, textvariable=AGE, font=('arial', 12)).grid(row=3, column=1)
 
-    lbl_address = Label(ContactForm, text="Address", font=('arial', 12))
-    lbl_address.grid(row=4, column=0, padx=5, pady=5, sticky=W)
-    address = Entry(ContactForm, textvariable=ADDRESS, font=('arial', 12))
-    address.grid(row=4, column=1)
+    Label(ContactForm, text="Address", font=('arial', 12)).grid(row=4, column=0, padx=5, pady=5, sticky=W)
+    Entry(ContactForm, textvariable=ADDRESS, font=('arial', 12)).grid(row=4, column=1)
 
-    lbl_contact = Label(ContactForm, text="Contact No.", font=('arial', 12))
-    lbl_contact.grid(row=5, column=0, padx=5, pady=5, sticky=W)
-    contact = Entry(ContactForm, textvariable=CONTACT, font=('arial', 12))
-    contact.grid(row=5, column=1)
+    Label(ContactForm, text="Contact No.", font=('arial', 12)).grid(row=5, column=0, padx=5, pady=5, sticky=W)
+    Entry(ContactForm, textvariable=CONTACT, font=('arial', 12)).grid(row=5, column=1)
 
     Button(ContactForm, text="Save", width=15, command=SubmitData).grid(row=6, column=1, pady=10)
 
@@ -146,9 +143,11 @@ def OnSelected(event):
     AGE.set(values[4])
     ADDRESS.set(values[5])
     CONTACT.set(values[6])
+
     AddNewWindow = Toplevel()
     AddNewWindow.title("Update Contact")
     AddNewWindow.geometry("400x300")
+    AddNewWindow.resizable(False, False)
 
     ContactForm = Frame(AddNewWindow)
     ContactForm.pack(side=TOP, pady=10)
@@ -214,3 +213,4 @@ Button(frame, text="Exit", width=10, command=root.quit).grid(row=0, column=2, pa
 # Load data on start
 Database()
 root.mainloop()
+
